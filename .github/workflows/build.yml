@@ -15,6 +15,7 @@ on:
         options:
           - All
           - Binary
+          - Win
           - Android
           - Apple
           - app-store
@@ -77,75 +78,50 @@ jobs:
           - { os: linux, arch: arm64, variant: glibc, naive: true }
           - { os: linux, arch: arm64, variant: musl, naive: true, debian: arm64, rpm: aarch64, pacman: aarch64, openwrt: "aarch64_cortex-a53 aarch64_cortex-a72 aarch64_cortex-a76 aarch64_generic" }
 
-          - { os: linux, arch: "386", go386: sse2 }
-          - { os: linux, arch: "386", variant: glibc, naive: true, go386: sse2 }
-          - { os: linux, arch: "386", variant: musl, naive: true, go386: sse2, debian: i386, rpm: i386, openwrt: "i386_pentium4" }
+          # - { os: linux, arch: "386", variant: musl, naive: true, go386: sse2, debian: i386, rpm: i386, openwrt: "i386_pentium4" }
 
-          - { os: linux, arch: arm, goarm: "7" }
-          - { os: linux, arch: arm, variant: glibc, naive: true, goarm: "7" }
-          - { os: linux, arch: arm, variant: musl, naive: true, goarm: "7", debian: armhf, rpm: armv7hl, pacman: armv7hl, openwrt: "arm_cortex-a5_vfpv4 arm_cortex-a7_neon-vfpv4 arm_cortex-a7_vfpv4 arm_cortex-a8_vfpv3 arm_cortex-a9_neon arm_cortex-a9_vfpv3-d16 arm_cortex-a15_neon-vfpv4" }
+          # - { os: linux, arch: arm, goarm: "7" }
+          # - { os: linux, arch: arm, variant: glibc, naive: true, goarm: "7" }
+          # - { os: linux, arch: arm, variant: musl, naive: true, goarm: "7", debian: armhf, rpm: armv7hl, pacman: armv7hl, openwrt: "arm_cortex-a5_vfpv4 arm_cortex-a7_neon-vfpv4 arm_cortex-a7_vfpv4 arm_cortex-a8_vfpv3 arm_cortex-a9_neon arm_cortex-a9_vfpv3-d16 arm_cortex-a15_neon-vfpv4" }
 
-          - { os: linux, arch: mipsle, gomips: hardfloat, naive: true, variant: glibc }
-          - { os: linux, arch: mipsle, gomips: softfloat, naive: true, variant: musl, debian: mipsel, rpm: mipsel, openwrt: "mipsel_24kc mipsel_74kc mipsel_mips32" }
-          - { os: linux, arch: mips64le, gomips: hardfloat, naive: true, variant: glibc, debian: mips64el, rpm: mips64el }
-          - { os: linux, arch: riscv64, naive: true, variant: glibc }
-          - { os: linux, arch: riscv64, naive: true, variant: musl, debian: riscv64, rpm: riscv64, openwrt: "riscv64_generic" }
-          - { os: linux, arch: loong64, naive: true, variant: glibc }
-          - { os: linux, arch: loong64, naive: true, variant: musl, debian: loongarch64, rpm: loongarch64, openwrt: "loongarch64_generic" }
-
-          - { os: linux, arch: "386", go386: softfloat, openwrt: "i386_pentium-mmx" }
-          - { os: linux, arch: arm, goarm: "5", openwrt: "arm_arm926ej-s arm_cortex-a7 arm_cortex-a9 arm_fa526 arm_xscale" }
-          - { os: linux, arch: arm, goarm: "6", debian: armel, rpm: armv6hl, openwrt: "arm_arm1176jzf-s_vfp" }
-          - { os: linux, arch: mips, gomips: softfloat, openwrt: "mips_24kc mips_4kec mips_mips32" }
           - { os: linux, arch: mipsle, gomips: hardfloat, openwrt: "mipsel_24kc_24kf" }
-          - { os: linux, arch: mipsle, gomips: softfloat }
-          - { os: linux, arch: mips64, gomips: softfloat, openwrt: "mips64_mips64r2 mips64_octeonplus" }
-          - { os: linux, arch: mips64le, gomips: hardfloat }
-          - { os: linux, arch: mips64le, gomips: softfloat, openwrt: "mips64el_mips64r2" }
-          - { os: linux, arch: s390x, debian: s390x, rpm: s390x }
-          - { os: linux, arch: ppc64le, debian: ppc64el, rpm: ppc64le }
-          - { os: linux, arch: riscv64 }
-          - { os: linux, arch: loong64 }
 
-          - { os: windows, arch: amd64, legacy_win7: true, legacy_name: "windows-7" }
-          - { os: windows, arch: "386", legacy_win7: true, legacy_name: "windows-7" }
+          # - { os: windows, arch: amd64, legacy_win7: true, legacy_name: "windows-7" }
+          # - { os: windows, arch: "386", legacy_win7: true, legacy_name: "windows-7" }
 
-          - { os: android, arch: arm64, ndk: "aarch64-linux-android23" }
-          - { os: android, arch: arm, ndk: "armv7a-linux-androideabi23" }
-          - { os: android, arch: amd64, ndk: "x86_64-linux-android23" }
-          - { os: android, arch: "386", ndk: "i686-linux-android23" }
+          # - { os: android, arch: arm64, ndk: "aarch64-linux-android23" }
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
-      - name: Setup Go
-        if: ${{ ! (matrix.legacy_win7 || matrix.legacy_go124) }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: ~1.25.7
-      - name: Setup Go 1.24
-        if: matrix.legacy_go124
-        uses: actions/setup-go@v5
-        with:
-          go-version: ~1.24.10
-      - name: Cache Go for Windows 7
-        if: matrix.legacy_win7
-        id: cache-go-for-windows7
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/go_win7
-          key: go_win7_1255
-      - name: Setup Go for Windows 7
-        if: matrix.legacy_win7 && steps.cache-go-for-windows7.outputs.cache-hit != 'true'
-        run: |-
-          .github/setup_go_for_windows7.sh
-      - name: Setup Go for Windows 7
-        if: matrix.legacy_win7
-        run: |-
-          echo "PATH=$HOME/go/go_win7/bin:$PATH" >> $GITHUB_ENV
-          echo "GOROOT=$HOME/go/go_win7" >> $GITHUB_ENV
+      # - name: Setup Go
+      #   if: ${{ ! (matrix.legacy_win7 || matrix.legacy_go124) }}
+      #   uses: actions/setup-go@v5
+      #   with:
+      #     go-version: ~1.25.7
+      # - name: Setup Go 1.24
+      #   if: matrix.legacy_go124
+      #   uses: actions/setup-go@v5
+      #   with:
+      #     go-version: ~1.24.10
+      # - name: Cache Go for Windows 7
+      #   if: matrix.legacy_win7
+      #   id: cache-go-for-windows7
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/go/go_win7
+      #     key: go_win7_1255
+      # - name: Setup Go for Windows 7
+      #   if: matrix.legacy_win7 && steps.cache-go-for-windows7.outputs.cache-hit != 'true'
+      #   run: |-
+      #     .github/setup_go_for_windows7.sh
+      # - name: Setup Go for Windows 7
+      #   if: matrix.legacy_win7
+      #   run: |-
+      #     echo "PATH=$HOME/go/go_win7/bin:$PATH" >> $GITHUB_ENV
+      #     echo "GOROOT=$HOME/go/go_win7" >> $GITHUB_ENV
       - name: Setup Android NDK
         if: matrix.os == 'android'
         uses: nttld/setup-ndk@v1
@@ -229,8 +205,8 @@ jobs:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-          GO386: ${{ matrix.go386 }}
-          GOARM: ${{ matrix.goarm }}
+          # GO386: ${{ matrix.go386 }}
+          # GOARM: ${{ matrix.goarm }}
           GOMIPS: ${{ matrix.gomips }}
           GOMIPS64: ${{ matrix.gomips }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -251,8 +227,8 @@ jobs:
           CGO_ENABLED: "1"
           GOOS: linux
           GOARCH: ${{ matrix.arch }}
-          GO386: ${{ matrix.go386 }}
-          GOARM: ${{ matrix.goarm }}
+          # GO386: ${{ matrix.go386 }}
+          # GOARM: ${{ matrix.goarm }}
           GOMIPS: ${{ matrix.gomips }}
           GOMIPS64: ${{ matrix.gomips }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -268,8 +244,8 @@ jobs:
           CGO_ENABLED: "1"
           GOOS: linux
           GOARCH: ${{ matrix.arch }}
-          GO386: ${{ matrix.go386 }}
-          GOARM: ${{ matrix.goarm }}
+          # GO386: ${{ matrix.go386 }}
+          # GOARM: ${{ matrix.goarm }}
           GOMIPS: ${{ matrix.gomips }}
           GOMIPS64: ${{ matrix.gomips }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -285,27 +261,27 @@ jobs:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-          GO386: ${{ matrix.go386 }}
-          GOARM: ${{ matrix.goarm }}
+          # GO386: ${{ matrix.go386 }}
+          # GOARM: ${{ matrix.goarm }}
           GOMIPS: ${{ matrix.gomips }}
           GOMIPS64: ${{ matrix.gomips }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build Android
-        if: matrix.os == 'android'
-        run: |
-          set -xeuo pipefail
-          go install -v ./cmd/internal/build
-          export CC='${{ matrix.ndk }}-clang'
-          export CXX="${CC}++"
-          mkdir -p dist
-          GOOS=$BUILD_GOOS GOARCH=$BUILD_GOARCH build go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
-          -ldflags '-s -buildid= -X github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }} -X internal/godebug.defaultGODEBUG=multipathtcp=0 -checklinkname=0' \
-          ./cmd/sing-box
-        env:
-          CGO_ENABLED: "1"
-          BUILD_GOOS: ${{ matrix.os }}
-          BUILD_GOARCH: ${{ matrix.arch }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Build Android
+      #   if: matrix.os == 'android'
+      #   run: |
+      #     set -xeuo pipefail
+      #     go install -v ./cmd/internal/build
+      #     export CC='${{ matrix.ndk }}-clang'
+      #     export CXX="${CC}++"
+      #     mkdir -p dist
+      #     GOOS=$BUILD_GOOS GOARCH=$BUILD_GOARCH build go build -v -trimpath -o dist/sing-box -tags "${BUILD_TAGS}" \
+      #     -ldflags '-s -buildid= -X github.com/sagernet/sing-box/constant.Version=${{ needs.calculate_version.outputs.version }} -X internal/godebug.defaultGODEBUG=multipathtcp=0 -checklinkname=0' \
+      #     ./cmd/sing-box
+      #   env:
+      #     CGO_ENABLED: "1"
+      #     BUILD_GOOS: ${{ matrix.os }}
+      #     BUILD_GOARCH: ${{ matrix.arch }}
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set name
         run: |-
           DIR_NAME="sing-box-${{ needs.calculate_version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}"
@@ -420,7 +396,7 @@ jobs:
           path: "dist"
   build_darwin:
     name: Build Darwin binaries
-    if: github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Binary'
+    if: github.event_name == 'workflow_dispatch' || inputs.build == 'macOS'
     runs-on: macos-latest
     needs:
       - calculate_version
@@ -494,7 +470,7 @@ jobs:
           path: "dist"
   build_windows:
     name: Build Windows binaries
-    if: github.event_name != 'workflow_dispatch' || inputs.build == 'All' || inputs.build == 'Binary'
+    if: github.event_name == 'workflow_dispatch' && inputs.build == 'Win'
     runs-on: windows-latest
     needs:
       - calculate_version

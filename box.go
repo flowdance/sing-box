@@ -28,6 +28,7 @@ import (
 	"github.com/sagernet/sing-box/experimental"
 	"github.com/sagernet/sing-box/experimental/cachefile"
 	"github.com/sagernet/sing-box/experimental/deprecated"
+	"github.com/sagernet/sing-box/experimental/flowlog"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing-box/protocol/direct"
@@ -154,6 +155,7 @@ func New(options Options) (*Box, error) {
 	var needCacheFile bool
 	var needClashAPI bool
 	var needV2RayAPI bool
+	flowLogEnabled := experimentalOptions.FlowLog != nil && experimentalOptions.FlowLog.Enabled
 	if experimentalOptions.CacheFile != nil && experimentalOptions.CacheFile.Enabled || options.PlatformLogWriter != nil {
 		needCacheFile = true
 	}
@@ -243,7 +245,7 @@ func New(options Options) (*Box, error) {
 	if err != nil {
 		return nil, E.Cause(err, "initialize router")
 	}
-	if needClashAPI || needAPIService {
+	if needClashAPI || needAPIService || flowLogEnabled {
 		trafficManager := trafficcontrol.NewManager(outboundManager)
 		service.MustRegisterPtr(ctx, trafficManager)
 		router.AppendTracker(trafficManager)
@@ -428,6 +430,13 @@ func New(options Options) (*Box, error) {
 		}
 		service.MustRegister[adapter.ClashServer](ctx, clashServer)
 		internalServices = append(internalServices, clashServer)
+	}
+	if flowLogEnabled {
+		flowLogService, err := flowlog.New(ctx, common.PtrValueOrDefault(experimentalOptions.FlowLog), logFactory.NewLogger("flowlog"))
+		if err != nil {
+			return nil, E.Cause(err, "create flowlog")
+		}
+		internalServices = append(internalServices, flowLogService)
 	}
 	if needV2RayAPI {
 		v2rayServer, err := experimental.NewV2RayServer(logFactory.NewLogger("v2ray-api"), common.PtrValueOrDefault(experimentalOptions.V2RayAPI))

@@ -6,7 +6,14 @@ type ExperimentalOptions struct {
 	CacheFile *CacheFileOptions `json:"cache_file,omitempty"`
 	ClashAPI  *ClashAPIOptions  `json:"clash_api,omitempty"`
 	V2RayAPI  *V2RayAPIOptions  `json:"v2ray_api,omitempty"`
+	FlowLog   *FlowLogOptions   `json:"flow_log,omitempty"`
 	Debug     *DebugOptions     `json:"debug,omitempty"`
+}
+
+type FlowLogOptions struct {
+	Enabled       bool   `json:"enabled,omitempty"`
+	Path          string `json:"path,omitempty"`
+	RetentionDays int    `json:"retention_days,omitempty"`
 }
 
 type CacheFileOptions struct {
